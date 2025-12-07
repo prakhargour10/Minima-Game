@@ -53,16 +53,16 @@ const App: React.FC = () => {
     // Listener for GAME_UPDATE (For Clients & Host self-updates via broadcast loopback usually handled differently, 
     // but here we just update state locally for host and network for others)
     
-    network.on('GAME_UPDATE', (newGameState: GameState) => {
+    const gameUpdateHandler = (newGameState: GameState) => {
       // If I am a client, I accept the new state
       if (!isHost) {
         setGameState(newGameState);
         if (newGameState.phase === GamePhase.ROUND_OVER) setShowWinnerModal(true);
         if (newGameState.phase === GamePhase.PLAYING && newGameState.roundLog.length === 1) setShowWinnerModal(false);
       }
-    });
+    };
 
-    network.on('JOIN_REQUEST', (payload: { name: string, tempId: string }) => {
+    const joinRequestHandler = (payload: { name: string, tempId: string }) => {
       if (!isHost) return;
       
       // Host logic: Add player if room not full
@@ -93,26 +93,35 @@ const App: React.FC = () => {
         network.send('GAME_UPDATE', newState);
         return newState;
       });
-    });
+    };
 
-    network.on('PLAYER_ACTION', (payload: ActionPayload) => {
+    const playerActionHandler = (payload: ActionPayload) => {
       if (!isHost) return;
       
       // Host validates and executes action
       if (payload.actionType === 'DISCARD') handleHostDiscard(payload.playerId, payload.data);
       if (payload.actionType === 'DRAW') handleHostDraw(payload.playerId, payload.data.fromDiscard);
       if (payload.actionType === 'SHOW') handleHostShow(payload.playerId);
-    });
+    };
 
-    network.on('JOIN_ACK', (payload: { name: string, assignedId: number }) => {
+    const joinAckHandler = (payload: { name: string, assignedId: number }) => {
       // If this is for me
       if (payload.name === playerName && myPlayerId === null) {
         setMyPlayerId(payload.assignedId);
       }
-    });
+    };
+
+    network.on('GAME_UPDATE', gameUpdateHandler);
+    network.on('JOIN_REQUEST', joinRequestHandler);
+    network.on('PLAYER_ACTION', playerActionHandler);
+    network.on('JOIN_ACK', joinAckHandler);
 
     return () => {
-      network.disconnect();
+      // Only remove listeners, don't disconnect
+      network.off('GAME_UPDATE', gameUpdateHandler);
+      network.off('JOIN_REQUEST', joinRequestHandler);
+      network.off('PLAYER_ACTION', playerActionHandler);
+      network.off('JOIN_ACK', joinAckHandler);
     };
   }, [isHost, playerName, myPlayerId]);
 
