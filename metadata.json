@@ -1,0 +1,5 @@
+{
+  "name": "Minima Card Game",
+  "description": "A strategic card game where players aim to minimize their hand value. Play against smart AI opponents in this Yaniv-style game.",
+  "requestFramePermissions": []
+}
