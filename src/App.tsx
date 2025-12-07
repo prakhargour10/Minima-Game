@@ -517,6 +517,14 @@ const App: React.FC = () => {
       ? gameState.discardPile[previousTopIndex] 
       : null;
 
+  // Safe card selection validation
+  const myHand = myPlayerId !== null ? gameState.players[myPlayerId]?.hand || [] : [];
+  const selectedCards = selectedHandIndices
+    .filter(i => i >= 0 && i < myHand.length)
+    .map(i => myHand[i])
+    .filter(card => card !== undefined);
+  const isValidSelection = selectedCards.length > 0 && isValidDiscard(selectedCards);
+
   // Render Helpers
   const getPosition = (index: number, total: number) => {
     if (myPlayerId === null) return 'top';
@@ -721,13 +729,13 @@ const App: React.FC = () => {
 
                   <button 
                       onClick={() => sendAction('DISCARD', selectedHandIndices)}
-                      disabled={selectedHandIndices.length === 0 || !isValidDiscard(selectedHandIndices.map(i => gameState.players[myPlayerId!].hand[i]))}
+                      disabled={!isValidSelection}
                       className="px-6 py-3 bg-blue-600 rounded-full font-bold shadow-lg hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all border-2 border-blue-400"
                   >
                     PLAY SELECTED 🎴
                   </button>
                 </div>
-                {selectedHandIndices.length > 0 && !isValidDiscard(selectedHandIndices.map(i => gameState.players[myPlayerId!].hand[i])) && (
+                {selectedHandIndices.length > 0 && !isValidSelection && (
                   <div className="text-red-400 text-sm bg-red-900/30 px-4 py-2 rounded-full border border-red-500/50">
                     ⚠️ Selected cards must have the same rank
                   </div>
