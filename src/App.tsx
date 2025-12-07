@@ -13,7 +13,7 @@ import { network } from './services/networkService';
 // Constants
 const STARTING_HAND_SIZE = 5;
 const MIN_PLAYERS = 2;
-const MAX_PLAYERS = 5;
+const MAX_PLAYERS = 2;
 
 const App: React.FC = () => {
   // --- Local UI State ---
