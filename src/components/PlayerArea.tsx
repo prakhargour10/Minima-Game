@@ -27,7 +27,7 @@ const PlayerArea: React.FC<PlayerAreaProps> = ({
 
   // Layout classes based on position
   const containerClasses = {
-    bottom: "flex-col-reverse bottom-2 sm:bottom-4 left-1/2 -translate-x-1/2",
+    bottom: "flex-col-reverse bottom-20 sm:bottom-4 left-1/2 -translate-x-1/2",
     top: "flex-col top-2 sm:top-4 left-1/2 -translate-x-1/2 scale-75 sm:scale-90",
     left: "flex-row top-1/2 left-2 sm:left-4 -translate-y-1/2 scale-75 sm:scale-90",
     right: "flex-row-reverse top-1/2 right-2 sm:right-4 -translate-y-1/2 scale-75 sm:scale-90",

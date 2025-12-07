@@ -719,7 +719,7 @@ const App: React.FC = () => {
           </div>
 
           {/* Controls */}
-          <div className="absolute bottom-24 sm:bottom-32 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 sm:gap-4 z-30 px-4">
+          <div className="absolute bottom-40 sm:bottom-32 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 sm:gap-4 z-30 px-4">
             {isMyTurn && gameState.turnPhase === TurnPhase.START && (
               <>
                 <div className="flex gap-2 sm:gap-4">
