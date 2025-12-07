@@ -553,39 +553,39 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-screen bg-slate-900 text-white flex flex-col items-center relative overflow-hidden font-sans">
+    <div className="w-full h-screen bg-slate-900 text-white flex flex-col items-center relative overflow-hidden font-sans touch-none">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-green-900 to-slate-900 pointer-events-none"></div>
 
       {/* SETUP PHASE (Entry) */}
       {gameState.phase === GamePhase.SETUP && (
-        <div className="z-10 flex flex-col items-center justify-center h-full space-y-8 animate-fade-in w-full max-w-md px-4">
-          <h1 className="text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500 tracking-tighter">
+        <div className="z-10 flex flex-col items-center justify-center h-full space-y-4 sm:space-y-8 animate-fade-in w-full max-w-md px-4">
+          <h1 className="text-4xl sm:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500 tracking-tighter">
             MINIMA
           </h1>
-          <div className="bg-slate-800/80 p-8 rounded-2xl shadow-2xl backdrop-blur border border-slate-700 w-full text-center">
-            <h2 className="text-2xl mb-6 font-semibold">Welcome</h2>
+          <div className="bg-slate-800/80 p-4 sm:p-8 rounded-2xl shadow-2xl backdrop-blur border border-slate-700 w-full text-center">
+            <h2 className="text-xl sm:text-2xl mb-4 sm:mb-6 font-semibold">Welcome</h2>
             
             <input 
               type="text" 
               placeholder="Your Name" 
-              className="w-full bg-slate-900 border border-slate-600 rounded p-3 mb-4 text-center focus:border-green-400 outline-none"
+              className="w-full bg-slate-900 border border-slate-600 rounded p-2 sm:p-3 mb-4 text-center focus:border-green-400 outline-none text-base"
               value={playerName}
               onChange={(e) => setPlayerName(e.target.value)}
             />
 
-            <div className="grid grid-cols-2 gap-4">
-              <button onClick={handleCreateRoom} className="py-3 bg-blue-600 rounded-lg font-bold hover:bg-blue-500 transition-colors">
+            <div className="grid grid-cols-2 gap-2 sm:gap-4">
+              <button onClick={handleCreateRoom} className="py-2 sm:py-3 bg-blue-600 rounded-lg font-bold hover:bg-blue-500 transition-colors text-sm sm:text-base active:scale-95">
                 Create Room
               </button>
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-1 sm:gap-2">
                  <input 
                     type="text" 
                     placeholder="Room ID" 
-                    className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-center text-sm"
+                    className="w-full bg-slate-900 border border-slate-600 rounded p-2 sm:p-3 text-center text-sm"
                     value={inputRoomId}
                     onChange={(e) => setInputRoomId(e.target.value)}
                   />
-                 <button onClick={handleJoinRoom} className="py-2 bg-slate-600 rounded-lg font-bold hover:bg-slate-500 transition-colors text-sm">
+                 <button onClick={handleJoinRoom} className="py-2 bg-slate-600 rounded-lg font-bold hover:bg-slate-500 transition-colors text-sm active:scale-95">
                    Join
                  </button>
               </div>
@@ -598,35 +598,35 @@ const App: React.FC = () => {
 
       {/* LOBBY PHASE */}
       {gameState.phase === GamePhase.LOBBY && (
-        <div className="z-10 flex flex-col items-center justify-center h-full space-y-6 animate-fade-in">
-          <h2 className="text-4xl font-bold">Lobby</h2>
-          <div className="bg-slate-800/90 p-8 rounded-xl border border-slate-600 min-w-[300px] text-center">
-             <div className="mb-6">
-                <div className="text-slate-400 text-sm">Room ID</div>
-                <div className="text-3xl font-mono font-bold text-yellow-400 tracking-widest">{gameState.roomId}</div>
+        <div className="z-10 flex flex-col items-center justify-center h-full space-y-4 sm:space-y-6 animate-fade-in px-4">
+          <h2 className="text-3xl sm:text-4xl font-bold">Lobby</h2>
+          <div className="bg-slate-800/90 p-4 sm:p-8 rounded-xl border border-slate-600 min-w-[280px] sm:min-w-[300px] w-full max-w-md text-center">
+             <div className="mb-4 sm:mb-6">
+                <div className="text-slate-400 text-xs sm:text-sm">Room ID</div>
+                <div className="text-2xl sm:text-3xl font-mono font-bold text-yellow-400 tracking-widest break-all">{gameState.roomId}</div>
              </div>
 
-             <div className="space-y-2 mb-8">
+             <div className="space-y-2 mb-6 sm:mb-8">
                <div className="text-sm font-bold border-b border-slate-600 pb-2 mb-2">Players ({gameState.players.length}/{MAX_PLAYERS})</div>
                {gameState.players.map((p) => (
-                 <div key={p.id} className="flex items-center justify-between bg-slate-700 p-2 rounded">
-                    <span>{p.name}</span>
-                    {p.id === gameState.hostId && <span className="text-xs text-yellow-500">HOST</span>}
+                 <div key={p.id} className="flex items-center justify-between bg-slate-700 p-2 rounded text-sm sm:text-base">
+                    <span className="truncate flex-1 text-left">{p.name}</span>
+                    {p.id === gameState.hostId && <span className="text-xs text-yellow-500 ml-2">HOST</span>}
                  </div>
                ))}
-               {gameState.players.length === 0 && <div className="text-slate-500 italic">Connecting...</div>}
+               {gameState.players.length === 0 && <div className="text-slate-500 italic text-sm">Connecting...</div>}
              </div>
 
              {isHost ? (
                <button 
                  onClick={startGameHost}
                  disabled={gameState.players.length < MIN_PLAYERS}
-                 className="w-full py-3 bg-green-600 rounded-lg font-bold hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                 className="w-full py-2 sm:py-3 bg-green-600 rounded-lg font-bold hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base active:scale-95"
                >
                  Start Game
                </button>
              ) : (
-               <div className="text-slate-400 animate-pulse">Waiting for host to start...</div>
+               <div className="text-slate-400 animate-pulse text-sm sm:text-base">Waiting for host to start...</div>
              )}
           </div>
         </div>
@@ -636,16 +636,19 @@ const App: React.FC = () => {
       {(gameState.phase === GamePhase.PLAYING || gameState.phase === GamePhase.ROUND_OVER) && (
         <>
           {/* Header */}
-          <div className="absolute top-0 left-0 right-0 h-16 bg-slate-900/50 backdrop-blur flex items-center justify-between px-6 z-20 border-b border-white/5">
+          <div className="absolute top-0 left-0 right-0 h-14 sm:h-16 bg-slate-900/50 backdrop-blur flex items-center justify-between px-3 sm:px-6 z-20 border-b border-white/5">
              <div className="flex flex-col">
-                <span className="font-bold text-green-400 tracking-widest">MINIMA</span>
-                <span className="text-[10px] text-slate-500">Room: {gameState.roomId}</span>
+                <span className="font-bold text-green-400 tracking-widest text-sm sm:text-base">MINIMA</span>
+                <span className="text-[9px] sm:text-[10px] text-slate-500">Room: {gameState.roomId}</span>
              </div>
-             <div className="text-sm font-semibold">
+             <div className="text-xs sm:text-sm font-semibold">
                 {gameState.players[gameState.currentPlayerIndex]?.id === myPlayerId ? (
                    <span className="text-yellow-400 animate-pulse">YOUR TURN</span>
                 ) : (
-                   <span className="text-slate-400">Current Turn: {gameState.players[gameState.currentPlayerIndex]?.name}</span>
+                   <>
+                     <span className="text-slate-400 hidden sm:inline">Current Turn: {gameState.players[gameState.currentPlayerIndex]?.name}</span>
+                     <span className="text-slate-400 sm:hidden truncate max-w-[100px]">{gameState.players[gameState.currentPlayerIndex]?.name}</span>
+                   </>
                 )}
              </div>
              <button onClick={() => window.location.reload()} className="text-xs bg-red-900/50 text-red-300 px-3 py-1 rounded hover:bg-red-900">Leave</button>
@@ -666,40 +669,40 @@ const App: React.FC = () => {
           ))}
 
           {/* Center Table */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex gap-8 items-center z-0">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex gap-4 sm:gap-8 items-center z-0 scale-75 sm:scale-100">
              
              {/* Deck */}
              <div className="relative group">
-               <div className="w-24 h-36 bg-blue-900 rounded-lg border-2 border-slate-400 shadow-2xl relative">
+               <div className="w-20 h-28 sm:w-24 sm:h-36 bg-blue-900 rounded-lg border-2 border-slate-400 shadow-2xl relative">
                   <div className="absolute inset-0 m-1 border border-blue-400/30 rounded"></div>
-                  <span className="absolute inset-0 flex items-center justify-center font-bold text-blue-200 opacity-20 text-4xl">?</span>
+                  <span className="absolute inset-0 flex items-center justify-center font-bold text-blue-200 opacity-20 text-3xl sm:text-4xl">?</span>
                </div>
-               <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-bold text-slate-400">Deck ({gameState.deck.length})</div>
+               <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] sm:text-xs font-bold text-slate-400 whitespace-nowrap">Deck ({gameState.deck.length})</div>
                
                {isMyTurn && gameState.turnPhase === TurnPhase.DRAW && (
                  <button 
                    onClick={() => sendAction('DRAW', { fromDiscard: false })}
-                   className="absolute inset-0 bg-green-500/20 hover:bg-green-500/40 cursor-pointer rounded-lg flex items-center justify-center animate-pulse border-2 border-green-400"
+                   className="absolute inset-0 bg-green-500/20 hover:bg-green-500/40 active:bg-green-500/60 cursor-pointer rounded-lg flex items-center justify-center animate-pulse border-2 border-green-400"
                  >
-                   <span className="bg-slate-900/80 px-2 py-1 rounded text-xs font-bold">Draw</span>
+                   <span className="bg-slate-900/80 px-2 py-1 rounded text-[10px] sm:text-xs font-bold">Draw</span>
                  </button>
                )}
              </div>
 
              {/* Discard Pile */}
-             <div className="relative flex items-center gap-4">
+             <div className="relative flex items-center gap-2 sm:gap-4">
                 
                 {previousTopCard && (
                   <div className="relative animate-slide-in-right">
                      <div className="opacity-80 hover:opacity-100 transition-opacity">
                         <CardComponent card={previousTopCard} />
                      </div>
-                     <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-bold text-yellow-500 w-max">Previous Top</div>
+                     <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] sm:text-xs font-bold text-yellow-500 whitespace-nowrap">Previous Top</div>
                      <button 
                         onClick={() => sendAction('DRAW', { fromDiscard: true })}
-                        className="absolute inset-0 bg-yellow-500/20 hover:bg-yellow-500/40 cursor-pointer rounded-lg flex items-center justify-center animate-pulse border-2 border-yellow-400"
+                        className="absolute inset-0 bg-yellow-500/20 hover:bg-yellow-500/40 active:bg-yellow-500/60 cursor-pointer rounded-lg flex items-center justify-center animate-pulse border-2 border-yellow-400"
                       >
-                        <span className="bg-slate-900/80 px-2 py-1 rounded text-xs font-bold">Take This</span>
+                        <span className="bg-slate-900/80 px-1.5 sm:px-2 py-1 rounded text-[10px] sm:text-xs font-bold">Take This</span>
                       </button>
                   </div>
                 )}
@@ -708,21 +711,21 @@ const App: React.FC = () => {
                   {topCard ? (
                     <CardComponent card={topCard} />
                   ) : (
-                    <div className="w-24 h-36 border-2 border-dashed border-slate-600 rounded-lg flex items-center justify-center text-slate-600 text-xs">Empty</div>
+                    <div className="w-20 h-28 sm:w-24 sm:h-36 border-2 border-dashed border-slate-600 rounded-lg flex items-center justify-center text-slate-600 text-xs">Empty</div>
                   )}
-                   <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-bold text-slate-400">Discard</div>
+                   <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] sm:text-xs font-bold text-slate-400">Discard</div>
                 </div>
              </div>
           </div>
 
           {/* Controls */}
-          <div className="absolute bottom-32 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 z-30">
+          <div className="absolute bottom-24 sm:bottom-32 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 sm:gap-4 z-30 px-4">
             {isMyTurn && gameState.turnPhase === TurnPhase.START && (
               <>
-                <div className="flex gap-4">
+                <div className="flex gap-2 sm:gap-4">
                   <button 
                       onClick={() => sendAction('SHOW')}
-                      className="px-6 py-3 bg-red-600 rounded-full font-bold shadow-lg hover:bg-red-500 active:scale-95 transition-all border-2 border-red-400"
+                      className="px-4 sm:px-6 py-2 sm:py-3 bg-red-600 rounded-full font-bold shadow-lg hover:bg-red-500 active:scale-95 transition-all border-2 border-red-400 text-sm sm:text-base"
                   >
                     SHOW ✋
                   </button>
@@ -730,30 +733,30 @@ const App: React.FC = () => {
                   <button 
                       onClick={() => sendAction('DISCARD', selectedHandIndices)}
                       disabled={!isValidSelection}
-                      className="px-6 py-3 bg-blue-600 rounded-full font-bold shadow-lg hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all border-2 border-blue-400"
+                      className="px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 rounded-full font-bold shadow-lg hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all border-2 border-blue-400 text-sm sm:text-base"
                   >
                     PLAY SELECTED 🎴
                   </button>
                 </div>
                 {selectedHandIndices.length > 0 && !isValidSelection && (
-                  <div className="text-red-400 text-sm bg-red-900/30 px-4 py-2 rounded-full border border-red-500/50">
+                  <div className="text-red-400 text-xs sm:text-sm bg-red-900/30 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-red-500/50">
                     ⚠️ Selected cards must have the same rank
                   </div>
                 )}
                 {selectedHandIndices.length === 0 && (
-                  <div className="text-slate-400 text-xs">
+                  <div className="text-slate-400 text-xs text-center">
                     Select cards to play or call SHOW
                   </div>
                 )}
               </>
             )}
             {isMyTurn && gameState.turnPhase === TurnPhase.DRAW && (
-              <div className="bg-slate-800 px-4 py-2 rounded-full text-sm font-bold animate-bounce text-yellow-400 border border-yellow-500/50">
+              <div className="bg-slate-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold animate-bounce text-yellow-400 border border-yellow-500/50 text-center">
                  Draw from Deck or Previous Pile Card
               </div>
             )}
             {!isMyTurn && (
-                <div className="bg-slate-900/80 px-4 py-2 rounded-full text-xs text-slate-400 border border-slate-700">
+                <div className="bg-slate-900/80 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs text-slate-400 border border-slate-700 text-center">
                     Waiting for {gameState.players[gameState.currentPlayerIndex]?.name}...
                 </div>
             )}
@@ -769,30 +772,30 @@ const App: React.FC = () => {
 
           {/* Winner Modal */}
           {showWinnerModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fade-in">
-              <div className="bg-slate-800 p-8 rounded-2xl border border-yellow-500/50 shadow-2xl max-w-md w-full text-center">
-                 <h2 className="text-4xl font-bold text-yellow-400 mb-2">Round Over!</h2>
-                 <p className="text-xl text-white mb-6">
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fade-in px-4">
+              <div className="bg-slate-800 p-6 sm:p-8 rounded-2xl border border-yellow-500/50 shadow-2xl max-w-md w-full text-center">
+                 <h2 className="text-3xl sm:text-4xl font-bold text-yellow-400 mb-2">Round Over!</h2>
+                 <p className="text-lg sm:text-xl text-white mb-4 sm:mb-6">
                    {gameState.players.find(p => p.id === gameState.winnerId)?.name} Wins!
                  </p>
                  
-                 <div className="space-y-3 mb-8">
+                 <div className="space-y-2 sm:space-y-3 mb-6 sm:mb-8">
                    {gameState.players.sort((a,b) => calculateHandValue(a.hand) - calculateHandValue(b.hand)).map(p => (
-                     <div key={p.id} className={`flex justify-between p-3 rounded ${p.id === gameState.winnerId ? 'bg-green-900/50 border border-green-500' : 'bg-slate-700'}`}>
-                        <span>{p.name}</span>
-                        <span className="font-bold">{calculateHandValue(p.hand)} pts</span>
+                     <div key={p.id} className={`flex justify-between p-2 sm:p-3 rounded text-sm sm:text-base ${p.id === gameState.winnerId ? 'bg-green-900/50 border border-green-500' : 'bg-slate-700'}`}>
+                        <span className="truncate flex-1 text-left">{p.name}</span>
+                        <span className="font-bold ml-2">{calculateHandValue(p.hand)} pts</span>
                      </div>
                    ))}
                  </div>
 
                  {isHost ? (
                     <div className="flex gap-4 justify-center">
-                        <button onClick={startGameHost} className="px-6 py-3 bg-green-600 rounded-lg font-bold hover:bg-green-500">
+                        <button onClick={startGameHost} className="px-4 sm:px-6 py-2 sm:py-3 bg-green-600 rounded-lg font-bold hover:bg-green-500 active:scale-95 text-sm sm:text-base">
                         Play Again
                         </button>
                     </div>
                  ) : (
-                    <div className="text-sm text-slate-400">Waiting for host to start next round...</div>
+                    <div className="text-xs sm:text-sm text-slate-400">Waiting for host to start next round...</div>
                  )}
               </div>
             </div>
