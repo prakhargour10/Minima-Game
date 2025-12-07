@@ -47,6 +47,13 @@ const App: React.FC = () => {
     logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [gameState.roundLog]);
 
+  // Clear selection when turn changes or phase changes
+  useEffect(() => {
+    if (gameState.currentPlayerIndex !== myPlayerId || gameState.turnPhase !== TurnPhase.START) {
+      setSelectedHandIndices([]);
+    }
+  }, [gameState.currentPlayerIndex, gameState.turnPhase, myPlayerId]);
+
   // --- Networking Setup ---
 
   useEffect(() => {
@@ -98,10 +105,140 @@ const App: React.FC = () => {
     const playerActionHandler = (payload: ActionPayload) => {
       if (!isHost) return;
       
-      // Host validates and executes action
-      if (payload.actionType === 'DISCARD') handleHostDiscard(payload.playerId, payload.data);
-      if (payload.actionType === 'DRAW') handleHostDraw(payload.playerId, payload.data.fromDiscard);
-      if (payload.actionType === 'SHOW') handleHostShow(payload.playerId);
+      // Host validates and executes action - use callback to get fresh state
+      setGameState(currentState => {
+        if (payload.actionType === 'DISCARD') {
+          const currentPlayer = currentState.players[currentState.currentPlayerIndex];
+          if (currentPlayer.id !== payload.playerId) return currentState;
+
+          const indices = Array.isArray(payload.data) ? payload.data : [];
+          const cardsToDiscard = indices.map((i: number) => currentPlayer.hand[i]).filter((card: Card | undefined) => card !== undefined);
+          
+          if (cardsToDiscard.length === 0 || !isValidDiscard(cardsToDiscard)) return currentState;
+
+          const newHand = currentPlayer.hand.filter((_: Card, i: number) => !indices.includes(i));
+          const newDiscardPile = [...currentState.discardPile, ...cardsToDiscard];
+
+          const newState = {
+            ...currentState,
+            discardPile: newDiscardPile,
+            players: currentState.players.map(p => p.id === payload.playerId ? { ...p, hand: newHand, lastAction: 'Discarded' } : p),
+            turnPhase: TurnPhase.DRAW,
+            cardsPlayedThisTurn: cardsToDiscard.length
+          };
+          
+          network.send('GAME_UPDATE', newState);
+          return newState;
+        }
+
+        if (payload.actionType === 'DRAW') {
+          const currentPlayer = currentState.players[currentState.currentPlayerIndex];
+          if (currentPlayer.id !== payload.playerId) return currentState;
+
+          let newDeck = [...currentState.deck];
+          let newDiscardPile = [...currentState.discardPile];
+          let drawnCard: Card | undefined;
+          const numPlayed = currentState.cardsPlayedThisTurn || 0;
+
+          if (payload.data.fromDiscard) {
+            const targetIndex = newDiscardPile.length - 1 - numPlayed;
+            if (targetIndex >= 0) {
+              drawnCard = newDiscardPile[targetIndex];
+              newDiscardPile.splice(targetIndex, 1);
+            }
+          } else {
+            if (newDeck.length === 0 && newDiscardPile.length > 1) {
+              const keptCount = numPlayed > 0 ? numPlayed : 1;
+              const cardsToKeep = newDiscardPile.slice(-keptCount);
+              const cardsToShuffle = newDiscardPile.slice(0, -keptCount);
+              newDeck = shuffle(cardsToShuffle);
+              newDiscardPile = cardsToKeep;
+            }
+            drawnCard = newDeck.pop();
+          }
+
+          if (!drawnCard) return currentState;
+
+          const updatedPlayers = currentState.players.map(p =>
+            p.id === payload.playerId
+              ? { ...p, hand: [...p.hand, drawnCard!], lastAction: payload.data.fromDiscard ? 'Swapped' : 'Drew Card' }
+              : p
+          );
+
+          const newState = {
+            ...currentState,
+            deck: newDeck,
+            discardPile: newDiscardPile,
+            players: updatedPlayers,
+            turnPhase: TurnPhase.START
+          };
+
+          network.send('GAME_UPDATE', newState);
+          setTimeout(() => {
+            const nextIndex = (newState.currentPlayerIndex + 1) % newState.players.length;
+            const nextTurnState = {
+              ...newState,
+              currentPlayerIndex: nextIndex,
+              turnPhase: TurnPhase.START,
+              cardsPlayedThisTurn: 0,
+              players: newState.players.map(p => ({ ...p, lastAction: undefined }))
+            };
+            setGameState(nextTurnState);
+            network.send('GAME_UPDATE', nextTurnState);
+          }, 1000);
+          
+          return newState;
+        }
+
+        if (payload.actionType === 'SHOW') {
+          const currentPlayer = currentState.players.find(p => p.id === payload.playerId);
+          if (!currentPlayer) return currentState;
+
+          let log = [...currentState.roundLog, `${currentPlayer.name} called SHOW!`];
+          
+          const callerSum = calculateHandValue(currentPlayer.hand);
+          let minSum = callerSum;
+          let strictlyLowest = true;
+
+          currentState.players.forEach(p => {
+            if (p.id === currentPlayer.id) return;
+            const pSum = calculateHandValue(p.hand);
+            if (pSum <= callerSum) {
+              strictlyLowest = false;
+              minSum = Math.min(minSum, pSum);
+            }
+          });
+
+          let winnerId = -1;
+          if (strictlyLowest) {
+            log.push(`${currentPlayer.name} has the lowest hand (${callerSum})! They WIN!`);
+            winnerId = currentPlayer.id;
+          } else {
+            log.push(`${currentPlayer.name} (${callerSum}) was caught! Someone has equal or lower.`);
+            let bestSum = 9999;
+            currentState.players.forEach(p => {
+              const s = calculateHandValue(p.hand);
+              if (s < bestSum) {
+                bestSum = s;
+                winnerId = p.id;
+              }
+            });
+          }
+
+          const newState = {
+            ...currentState,
+            phase: GamePhase.ROUND_OVER,
+            winnerId,
+            roundLog: log
+          };
+          
+          setShowWinnerModal(true);
+          network.send('GAME_UPDATE', newState);
+          return newState;
+        }
+
+        return currentState;
+      });
     };
 
     const joinAckHandler = (payload: { name: string, assignedId: number }) => {
@@ -571,23 +708,35 @@ const App: React.FC = () => {
           </div>
 
           {/* Controls */}
-          <div className="absolute bottom-32 left-1/2 -translate-x-1/2 flex gap-4 z-30">
+          <div className="absolute bottom-32 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 z-30">
             {isMyTurn && gameState.turnPhase === TurnPhase.START && (
               <>
-                 <button 
-                    onClick={() => sendAction('SHOW')}
-                    className="px-6 py-3 bg-red-600 rounded-full font-bold shadow-lg hover:bg-red-500 active:scale-95 transition-all border-2 border-red-400"
-                 >
-                   SHOW ✋
-                 </button>
+                <div className="flex gap-4">
+                  <button 
+                      onClick={() => sendAction('SHOW')}
+                      className="px-6 py-3 bg-red-600 rounded-full font-bold shadow-lg hover:bg-red-500 active:scale-95 transition-all border-2 border-red-400"
+                  >
+                    SHOW ✋
+                  </button>
 
-                 <button 
-                    onClick={() => sendAction('DISCARD', selectedHandIndices)}
-                    disabled={selectedHandIndices.length === 0 || !isValidDiscard(selectedHandIndices.map(i => gameState.players[myPlayerId!].hand[i]))}
-                    className="px-6 py-3 bg-blue-600 rounded-full font-bold shadow-lg hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all border-2 border-blue-400"
-                 >
-                   PLAY SELECTED 🎴
-                 </button>
+                  <button 
+                      onClick={() => sendAction('DISCARD', selectedHandIndices)}
+                      disabled={selectedHandIndices.length === 0 || !isValidDiscard(selectedHandIndices.map(i => gameState.players[myPlayerId!].hand[i]))}
+                      className="px-6 py-3 bg-blue-600 rounded-full font-bold shadow-lg hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all border-2 border-blue-400"
+                  >
+                    PLAY SELECTED 🎴
+                  </button>
+                </div>
+                {selectedHandIndices.length > 0 && !isValidDiscard(selectedHandIndices.map(i => gameState.players[myPlayerId!].hand[i])) && (
+                  <div className="text-red-400 text-sm bg-red-900/30 px-4 py-2 rounded-full border border-red-500/50">
+                    ⚠️ Selected cards must have the same rank
+                  </div>
+                )}
+                {selectedHandIndices.length === 0 && (
+                  <div className="text-slate-400 text-xs">
+                    Select cards to play or call SHOW
+                  </div>
+                )}
               </>
             )}
             {isMyTurn && gameState.turnPhase === TurnPhase.DRAW && (
