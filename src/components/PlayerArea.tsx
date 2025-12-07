@@ -1,5 +1,5 @@
 import React from 'react';
-import { Player, Card } from '../types';
+import { Player } from '../types';
 import CardComponent from './CardComponent';
 import { calculateHandValue } from '../utils/cardUtils';
 

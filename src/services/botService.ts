@@ -1,14 +1,14 @@
 
-import { Card, Player, Rank } from '../types';
-import { calculateHandValue, isValidDiscard } from '../utils/cardUtils';
+import { Card, Player } from '../types';
+import { calculateHandValue } from '../utils/cardUtils';
 
 export class BotService {
   
   static executeTurn(
     bot: Player, 
     discardPile: Card[], 
-    deck: Card[],
-    allPlayers: Player[],
+    _deck: Card[],
+    _allPlayers: Player[],
     callback: (action: 'SHOW' | 'PLAY_AND_DRAW', payload?: any) => void
   ) {
     const handValue = calculateHandValue(bot.hand);

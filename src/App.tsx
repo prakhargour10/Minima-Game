@@ -143,7 +143,7 @@ const App: React.FC = () => {
     }
 
     const deck = createDeck(gameState.players.length > 5 ? 2 : 1);
-    const playersWithCards = gameState.players.map(p => ({ ...p, hand: [], score: 0 }));
+    const playersWithCards = gameState.players.map(p => ({ ...p, hand: [] as Card[], score: 0 }));
 
     // Deal cards
     for (let i = 0; i < STARTING_HAND_SIZE; i++) {

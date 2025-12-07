@@ -1,5 +1,5 @@
 
-import { GameState, NetworkMessage, NetworkMessageType } from '../types';
+import { NetworkMessage, NetworkMessageType } from '../types';
 
 type MessageCallback = (payload: any) => void;
 
